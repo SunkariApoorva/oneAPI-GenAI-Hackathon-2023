@@ -39,7 +39,8 @@ To get started with the oneAPI-GenAI-Hackathon-2023 repository, follow these ste
   1. clone the git repository
   2. use the transactions.csv dataset provided in the transactions folders of git repo for training and validating fraud detection model.
   3. The code base for the deployed hugging face model is under models folder.
-  4. open https://huggingface.co/spaces/blaze999/llama-2-RAG UI interface chatbot for recommendations on provided/input question
+  4. GenAI Model and Code Repo: https://huggingface.co/spaces/blaze999/llama-2-RAG/tree/main
+  5. Huggingface spaces Deployment URL: https://huggingface.co/spaces/blaze999/llama-2-RAG UI interface chatbot for recommendations on provided/input question
   
 ### Future Scope:
 1.This raw model is trained with minimal pdf content data for portfolio management , which helps providing invetsment recommendations on relevant data.
