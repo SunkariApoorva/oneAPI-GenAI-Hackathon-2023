@@ -103,13 +103,16 @@ def contact():
 
     if 'embeddings' not in st.session_state:
         print('loading embeddings...')
-        st.session_state['embeddings'] = HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
+        st.session_state['embeddings'] = HuggingFaceEmbeddings(model_name = 'BAAI/bge-large-en-v1.5')
         print('embeddings loaded')
 
     if 'LLM' not in st.session_state:
         print('loading llm...')
-        st.session_state['LLM'] = CTransformers(model= "local_models/llama-2-7b-chat.Q4_K_M.gguf") #HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
-         #HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
+        st.session_state['LLM'] =  CTransformers(model="TheBloke/Llama-2-7B-Chat-GGUF",
+                    model_file="llama-2-7b-chat.Q4_K_M.gguf",
+                    model_type="llama",
+                    max_new_tokens=512,
+                    temperature=0.1) 
         
         print('llm loaded')
 
