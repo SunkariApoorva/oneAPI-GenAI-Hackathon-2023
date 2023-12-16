@@ -34,6 +34,8 @@ To get started with the oneAPI-GenAI-Hackathon-2023 repository, follow these ste
    8. langchain (intel developer cloud)
    9. open api optimizer
    10. Fast API
+   11. Streamlit
+   12. intel_extension_for_transformers from Intel oneAPI tool kit
    
 ### Step-by-Step Code Execution Instructions:
   1. clone the git repository
