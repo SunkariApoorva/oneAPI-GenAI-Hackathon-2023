@@ -40,7 +40,7 @@ def home():
             
         
 
-        # Check if the number is even
+        # Check if the customer is legit or fraud f
         if fraud_classify == 'legit':
             st.session_state.user_input = user_input
             st.success(f"The given customer is classifed as: {fraud_classify}", icon="✅")
@@ -48,9 +48,7 @@ def home():
         else:
             st.error(f"The given customer is classifed as: {fraud_classify}. Please contact our customercare")
 
-        # else:
-        # st.error(f"You entered an odd number. Please enter an even number.")
-
+        
 
 # Function to render the about page
 def about():
