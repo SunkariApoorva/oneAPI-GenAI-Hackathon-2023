@@ -1,8 +1,19 @@
 import streamlit as st
 import pandas as pd
-from langchain.chat_models import AzureChatOpenAI
+import matplotlib.pyplot as plt
+from transformers import AutoTokenizer, TextStreamer
+from intel_extension_for_transformers.transformers import AutoModelForCausalLM
+from langchain.llms import CTransformers
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
+# from langchain.callbacks import StreamlitCallbackHandler
 
-import time
+import os
+import re
+
 
 
 # Page configurations
@@ -23,16 +34,19 @@ def home():
         fraud_classify = get_customer_preds(str(user_input))
         print(fraud_classify)
         # fraud_classify = user_input
-
+        if "fraud_classify" not in st.session_state:
+            st.session_state.fraud_classify = fraud_classify
+        st.session_state.fraud_classify = fraud_classify
+            
         
 
         # Check if the number is even
         if fraud_classify == 'legit':
             st.session_state.user_input = user_input
-            st.success(f"The given customer is classifed as: {fraud_classify}")
+            st.success(f"The given customer is classifed as: {fraud_classify}", icon="✅")
             st.button("Go to About Page", on_click=about)
         else:
-            st.error(f"The given customer is classifed as: {fraud_classify}")
+            st.error(f"The given customer is classifed as: {fraud_classify}. Please contact our customercare")
 
         # else:
         # st.error(f"You entered an odd number. Please enter an even number.")
@@ -40,6 +54,7 @@ def home():
 
 # Function to render the about page
 def about():
+    import matplotlib.pyplot as plt
     st.title("Customer Profile")
     if hasattr(st.session_state, 'user_input'):
         # st.write(f"This is the About Page. You entered the number: {st.session_state.user_input}.")
@@ -47,33 +62,37 @@ def about():
 
         col1, col2 = st.columns(2)
         for key, value in customer_details.items():
-            if key in ["name", "account number", "age", "country", "balance"]:
+            if key in ["name", "account_no", "age", "country", "balance"]:
                 with col1:
                     st.write(f"**{key}:**")
                 with col2:
-                    st.write(value)
+                    st.write(value)   
         st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
+        
+
+        st.title('Customer Preferences')
+        equity = st.slider("Select your Equity:", min_value=0, max_value=100, value=0)
+        st.write(equity)
+        funds = st.slider("Select your Funds:", min_value=0, max_value=100, value=0)
+        st.write(funds)
+        deposits = st.slider("Select your Deposits:", min_value=0, max_value=100, value=0)
+        st.write(deposits)
+        shares = st.slider("Select your shares:", min_value=0, max_value=100, value=0)
+        st.write(shares)
+        customer_preference_dict = {
+            'equity':equity,
+            'funds': funds,
+            'deposits': deposits,
+            'shares': shares
+        }
+
+        submit_button = st.button("Submit")
+        if submit_button:
+            print('inside submit button')
+            if "customer_preference_dict" not in st.session_state:
+                st.session_state.customer_preference_dict = customer_preference_dict
+            st.session_state.customer_preference_dict = customer_preference_dict
+            st.success("your preference was saved successfully.",icon="✅")
         st.write(" ")
         st.write(" ")
 
@@ -82,61 +101,23 @@ def about():
 
 # Function to render the contact page
 def contact():
-    import streamlit as st
-    from langchain.llms import CTransformers
-    # from langchain.tools import DuckDuckGoSearchRun
-    # from pathlib import Path
-    from langchain.llms import CTransformers
-    from langchain.document_loaders import PyPDFLoader
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
-    from langchain.embeddings import HuggingFaceEmbeddings
-    from langchain.vectorstores import FAISS
-    from langchain.chains import RetrievalQA
-    # from langchain.callbacks import StreamlitCallbackHandler
-    # from langchain.chat_models import AzureChatOpenAI
-    from dotenv import load_dotenv
-    import os
-    import re
-    from langchain.chat_models import AzureChatOpenAI
-
-    import time
-    load_dotenv()
-
-
-    # gpt_engine = os.environ.get('OPEN_AI_ENGINE')
-    # openai_api_version = os.environ.get('OPEN_AI_VERSION')
-    # gpt_api_base = os.environ.get('OPEN_AI_BASE')
-    # gpt_api_key = os.environ.get('OPEN_AI_KEY')
+    
 
     if 'embeddings' not in st.session_state:
         print('loading embeddings...')
-        st.session_state['embeddings'] = HuggingFaceEmbeddings(model_name = 'BAAI/bge-large-en-v1.5')
+        st.session_state['embeddings'] = HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
         print('embeddings loaded')
 
     if 'LLM' not in st.session_state:
         print('loading llm...')
-        st.session_state['LLM'] = CTransformers(model="TheBloke/Llama-2-7B-Chat-GGUF",
-                    model_file="llama-2-7b-chat.Q4_K_M.gguf",
-                    model_type="llama",
-                    max_new_tokens=512,
-                    temperature=0.1)
-        #CTransformers(model= "local_models/llama-2-7b-chat.Q4_K_M.gguf") #HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
-       # st.session_state['LLM'] = AzureChatOpenAI(deployment_name=gpt_engine, temperature=0, openai_api_version=openai_api_version, openai_api_key=gpt_api_key,
-                         # openai_api_base=gpt_api_base) #HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
+        st.session_state['LLM'] = CTransformers(model= "local_models/llama-2-7b-chat.Q4_K_M.gguf") #HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
+         #HuggingFaceEmbeddings(model_name = 'local_models/embeddings-bge-large/')
         
         print('llm loaded')
 
     def get_llm_model(selected_option):
         if selected_option == "LLama2":
-            llm = CTransformers(model="TheBloke/Llama-2-7B-Chat-GGUF",
-                    model_file="llama-2-7b-chat.Q4_K_M.gguf",
-                    model_type="llama",
-                    max_new_tokens=512,
-                    temperature=0.1)
-        elif selected_option == "ChatGPT":
-            llm = ""
-            #llm = AzureChatOpenAI(deployment_name=gpt_engine, temperature=0, openai_api_version=openai_api_version, openai_api_key=gpt_api_key,
-                        #openai_api_base=gpt_api_base)
+            llm = CTransformers(model= "local_models/llama-2-7b-chat.Q4_K_M.gguf")
         return llm
 
     # llm = CTransformers(model= "local_models/llama-2-7b-chat.Q4_K_M.gguf")
@@ -183,6 +164,7 @@ def contact():
         response = response['result']
         return response
 
+    st.title('Customer Support BOT  🚀')
     if "messages" not in st.session_state:
         st.session_state.messages = []
         st.session_state.messages.append({"role": "assistant", "content": "Hi, How can I Help you?"})
@@ -191,6 +173,7 @@ def contact():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+    
     # Accept user input
     if prompt := st.chat_input("What is up?"):
         # Add user message to chat history
@@ -219,11 +202,60 @@ def contact():
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 
+
+def portfolio():
+    import os
+     
+    st.title("Customer Profile")
+    
+
+
+    
+    if 'model' not in st.session_state:
+        print('loading llm...')
+        model_name = "Intel/neural-chat-7b-v1-1"     # Hugging Face model_id or local model
+        tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        streamer = TextStreamer(tokenizer)
+
+        model = AutoModelForCausalLM.from_pretrained(model_name, load_in_4bit=True)
+        st.session_state['model'] = model
+        st.session_state['tokenizer'] = tokenizer
+        st.session_state['streamer'] = streamer
+
+    if hasattr(st.session_state, 'customer_preference_dict'):
+        # st.write(f"This is the About Page. You entered the number: {st.session_state.user_input}.")
+        customer_details = st.session_state.customer_preference_dict
+        labels = []
+        sizes = []
+        for key,value in customer_details.items():
+            labels.append(key)
+            sizes.append(value)
+        col1, col2 = st.columns(2)
+        with col1:
+            # Create a pie chart using Matplotlib
+            fig, ax = plt.subplots(figsize = (6,3))
+            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+            ax.axis('equal')  # Equal aspect ratio ensures that the pie chart is circular.
+
+            # Display the pie chart using st.pyplot
+            st.pyplot(fig)
+            
+        with col2:
+            st.title('Gen AI Feedback')
+            prompt = f'You are given an investment decision taken by the user. Please provide your feedback in a postive way.\
+                . The following is the investment decision of the user: {st.session_state.customer_preference_dict}'
+            with st.spinner('Loading Insights...'):
+                inputs = st.session_state.tokenizer(prompt, return_tensors="pt").input_ids
+                outputs = st.session_state.model.generate(inputs, streamer=st.session_state.streamer, max_new_tokens=300)
+                response = st.session_state.LLM.predict(prompt)
+                st.write(response)
+
 # Navigation
 pages = {
     "Home": home,
     "About": about,
     "Chat": contact,
+    "Portfolio": portfolio
 }
 
 
@@ -245,7 +277,7 @@ def get_customer_data(customer_id):
     current_balance = fraud_predictions[fraud_predictions['EEID'] == customer_id]['Bank Balance'].values[0]
     # fraud_classify = fraud_predictions[fraud_predictions['EEID'] == customer_id]['Label'].values[0]
     output_response = {'name': customer_name,
-                       'account number':  acc_no,
+                       'account_no': acc_no,
                        'age': age,
                        'country':country,
                        'balance': current_balance,
@@ -257,3 +289,8 @@ selected_page = st.sidebar.selectbox("Select a page", list(pages.keys()))
 
 # Render the selected page
 pages[selected_page]()
+
+
+
+
+
