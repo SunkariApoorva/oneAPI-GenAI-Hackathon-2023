@@ -3,3 +3,7 @@ pypdf
 ctransformers
 faiss-cpu
 gradio
+streamlit
+intel-extension-for-transformers
+sentence-transformers
+transformers
