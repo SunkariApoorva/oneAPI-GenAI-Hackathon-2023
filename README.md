@@ -48,7 +48,7 @@ To get started with the oneAPI-GenAI-Hackathon-2023 repository, follow these ste
   7. Port forwarding using ngrok: ``` ngrok http 8501 ```
 
 
-### Step-by-Step Code Execution Instructions:
+### Step-by-Step Code Execution Instructions (Ignore this, refer to execution instructions through IDC Above):
   1. clone the git repository
   2. use the transactions.csv dataset provided in the transactions folders of git repo for training and validating fraud detection model.
   3. The code base for the fraud detection model using AFD is updated in the git repo, above.
